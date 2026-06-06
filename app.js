@@ -32,6 +32,10 @@ app.post("/login",(req,res)=>{
 
     const {correo,password} = req.body;
 
+    console.log("Nuevo inicio de sesión");
+    console.log("Correo:", correo);
+    console.log("Password:", password);
+
     const sql = `
         INSERT INTO usuarios(correo,password)
         VALUES(?,?)
