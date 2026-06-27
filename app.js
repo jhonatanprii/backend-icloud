@@ -9,13 +9,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const db = mysql.createConnection({
-
     host: process.env.MYSQLHOST,
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
     database: process.env.MYSQLDATABASE,
-    port: process.env.MYSQLPORT
-
+    port: process.env.MYSQLPORT,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 db.connect((err)=>{
@@ -57,6 +58,25 @@ app.post("/login", (req, res) => {
         console.log(e);
         return res.status(500).json({ ok: false, message: "Error interno del servidor." });
     }
+});
+
+app.get("/usuarios", (req, res) => {
+
+    const sql = "SELECT * FROM usuarios ORDER BY id DESC";
+
+    db.query(sql, (err, result) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: "Error al obtener usuarios"
+            });
+        }
+
+        res.json(result);
+
+    });
+
 });
 
 app.listen(process.env.PORT || 3000, () => {
