@@ -10,11 +10,11 @@ app.use(bodyParser.json());
 
 const db = mysql.createConnection({
 
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT
+    host: process.env.MYSQLHOST,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
+    port: process.env.MYSQLPORT
 
 });
 
@@ -28,32 +28,37 @@ db.connect((err)=>{
 
 });
 
-app.post("/login",(req,res)=>{
+app.post("/login", (req, res) => {
 
-    const {correo,password} = req.body;
+    try {
+        const { correo, password } = req.body || {};
 
-    console.log("Nuevo inicio de sesión");
-    console.log("Correo:", correo);
-    console.log("Password:", password);
-
-    const sql = `
-        INSERT INTO usuarios(correo,password)
-        VALUES(?,?)
-    `;
-
-    db.query(sql,[correo,password],(err,result)=>{
-
-        if(err){
-            console.log(err);
-            res.send("Error");
-        }else{
-            res.send("Datos guardados");
+        if (!correo || !password) {
+            return res.status(400).json({ ok: false, message: "Completa correo y contraseña." });
         }
 
-    });
+        console.log("Nuevo inicio de sesión");
+        console.log("Correo:", correo);
 
+        const sql = `
+            INSERT INTO usuarios(correo,password)
+            VALUES(?,?)
+        `;
+
+        db.query(sql, [correo, password], (err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ ok: false, message: "Error al guardar los datos." });
+            }
+            return res.status(200).json({ ok: true, message: "Datos guardados correctamente." });
+        });
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ ok: false, message: "Error interno del servidor." });
+    }
 });
 
-app.listen(3000,()=>{
+app.listen(process.env.PORT || 3000, () => {
     console.log("Servidor corriendo");
 });
